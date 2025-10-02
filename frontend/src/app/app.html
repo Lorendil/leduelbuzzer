@@ -1,0 +1,32 @@
+<div class="container">
+  <h1>🎉 Jeu du Buzzer 🎉</h1>
+
+  <!-- Étape 1 : rejoindre -->
+  <div *ngIf="!joined" class="join-box">
+    <input [(ngModel)]="playerName" placeholder="Ton pseudo" />
+    <button pButton type="button" label="Rejoindre la partie" (click)="join()"></button>
+  </div>
+
+  <!-- Étape 2 : partie -->
+  <div *ngIf="joined">
+    <h2>Joueurs :</h2>
+    <ul>
+      <li *ngFor="let p of players">{{ p }}</li>
+    </ul>
+
+    <div class="buzzer-box">
+      <button 
+        pButton 
+        type="button" 
+        label="🚨 BUZZER 🚨" 
+        (click)="buzz()" 
+        [disabled]="!!winner">
+      </button>
+    </div>
+
+    <div *ngIf="winner" class="winner-box">
+      <h2>🏆 {{ winner }}</h2>
+      <button pButton type="button" label="Nouvelle partie" (click)="reset()"></button>
+    </div>
+  </div>
+</div>
