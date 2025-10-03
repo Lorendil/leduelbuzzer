@@ -1,0 +1,17 @@
+.join-box input {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.buzzer-box button {
+  width: 100%;
+}
+
+.winner-box h2 {
+  color: #ff9800;
+  text-align: center;
+}
+
+.flex-1 {
+  flex: 1;
+}

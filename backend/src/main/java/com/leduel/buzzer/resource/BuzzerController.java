@@ -4,15 +4,32 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 @Controller
 public class BuzzerController {
 
     private boolean buzzerPressed = false;
 
+    private ArrayList<String> joueurs = new ArrayList<>();
+
     @MessageMapping("/join")
     @SendTo("/topic/players")
-    public String join(String player) {
-        return player + " a rejoint la partie !";
+    public ArrayList<String> join(String player) {
+        joueurs.add(player);
+        return joueurs;
+    }
+
+    @MessageMapping("/updateCurrentPlayers")
+    @SendTo("/topic/currentPlayers")
+    public ArrayList<String> currentPlayers(String rule) {
+        if (rule.equalsIgnoreCase("clearAllPlayers")) {
+            joueurs = new ArrayList<>();
+        } else {
+            joueurs = joueurs.stream().filter(p -> !p.equalsIgnoreCase(rule)).collect(Collectors.toCollection(ArrayList::new));
+        }
+        return joueurs;
     }
 
     @MessageMapping("/buzz")

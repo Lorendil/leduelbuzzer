@@ -13,15 +13,15 @@ export class BuzzerService {
       webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       reconnectDelay: 5000,
       onConnect: () => {
-        console.log("✅ WebSocket connecté !");
+        console.log('✅ WebSocket connecté !');
         this.connected = true;
         // Enregistre toutes les subscriptions en attente
-        this.pendingSubscriptions.forEach(fn => fn());
+        this.pendingSubscriptions.forEach((fn) => fn());
         this.pendingSubscriptions = [];
       },
       onStompError: (frame) => {
-        console.error("❌ STOMP error:", frame);
-      }
+        console.error('❌ STOMP error:', frame);
+      },
     });
 
     this.client.activate();
@@ -35,6 +35,18 @@ export class BuzzerService {
     this.client.publish({ destination: '/app/buzz', body: player });
   }
 
+  reset() {
+    this.client.publish({ destination: '/app/reset' });
+  }
+  onReset(callback: (msg: string) => void) {
+    const subscribeFn = () => {
+      this.client.subscribe('/topic/reset', (message) => {
+        callback(message.body);
+      });
+    };
+    this.connected ? subscribeFn() : this.pendingSubscriptions.push(subscribeFn);
+  }
+
   onBuzz(callback: (msg: string) => void) {
     const subscribeFn = () => {
       this.client.subscribe('/topic/buzz', (message) => {
@@ -44,10 +56,34 @@ export class BuzzerService {
     this.connected ? subscribeFn() : this.pendingSubscriptions.push(subscribeFn);
   }
 
-  onPlayers(callback: (msg: string) => void) {
+  onPlayers(callback: (players: string[]) => void) {
     const subscribeFn = () => {
       this.client.subscribe('/topic/players', (message) => {
-        callback(message.body);
+        try {
+          const players = JSON.parse(message.body) as string[];
+          callback(players);
+        } catch (e) {
+          console.error("Erreur parsing onPlayers:", e, message.body);
+        }
+      });
+    };
+    this.connected ? subscribeFn() : this.pendingSubscriptions.push(subscribeFn);
+  }
+
+  updatePlayers(rule: string) {
+    // Envoie la commande (clearAllPlayers ou nom du joueur à retirer)
+    this.client.publish({ destination: '/app/updateCurrentPlayers', body: rule });
+  }
+
+  onCurrentPlayers(callback: (players: string[]) => void) {
+    const subscribeFn = () => {
+      this.client.subscribe('/topic/currentPlayers', (message) => {
+        try {
+          const players = JSON.parse(message.body) as string[];
+          callback(players);
+        } catch (e) {
+          console.error('Erreur de parsing currentPlayers:', e, message.body);
+        }
       });
     };
     this.connected ? subscribeFn() : this.pendingSubscriptions.push(subscribeFn);

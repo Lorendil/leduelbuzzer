@@ -1,32 +1,66 @@
-<div class="container">
-  <h1>🎉 Jeu du Buzzer 🎉</h1>
-
-  <!-- Étape 1 : rejoindre -->
-  <div *ngIf="!joined" class="join-box">
-    <input [(ngModel)]="playerName" placeholder="Ton pseudo" />
-    <button pButton type="button" label="Rejoindre la partie" (click)="join()"></button>
+<div class="container p-3">
+  <!-- Header -->
+  <div class="grid mb-4">
+    <div class="col-8">
+      <h1>Buzzer de Le Duel</h1>
+    </div>
+    <div class="col-4 flex align-items-center gap-2">
+      <p-password [(ngModel)]="password" [feedback]="false" placeholder="Admin"></p-password>
+      <button pButton type="button" label="Admin" (click)="connectToAdmin()"></button>
+    </div>
   </div>
 
-  <!-- Étape 2 : partie -->
-  <div *ngIf="joined">
-    <h2>Joueurs :</h2>
-    <ul>
-      <li *ngFor="let p of players">{{ p }}</li>
-    </ul>
+  <div class="grid">
+    <!-- Partie joueurs -->
+    <div class="col-8">
+      <!-- Étape 1 : rejoindre -->
+      <div *ngIf="!joined" class="join-box mb-3">
+        <input [(ngModel)]="playerName" placeholder="Ton pseudo" class="p-inputtext p-mr-2"/>
+        <button pButton type="button" label="Rejoindre la partie" (click)="join()"></button>
+      </div>
 
-    <div class="buzzer-box">
-      <button 
-        pButton 
-        type="button" 
-        label="🚨 BUZZER 🚨" 
-        (click)="buzz()" 
-        [disabled]="!!winner">
-      </button>
+      <!-- Étape 2 : partie -->
+      <div *ngIf="joined">
+        <h2>Joueurs :</h2>
+        <ul>
+          <li *ngFor="let p of players">{{ p }}</li>
+        </ul>
+
+        <div class="buzzer-box my-3">
+          <button
+            pButton
+            type="button"
+            label="🚨 BUZZER 🚨"
+            class="p-button-success p-button-lg"
+            (click)="buzz()"
+            [disabled]="!!winner">
+          </button>
+        </div>
+
+        <div *ngIf="winner" class="winner-box my-2">
+          <h2>🏆 {{ winner }}</h2>
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="winner" class="winner-box">
-      <h2>🏆 {{ winner }}</h2>
-      <button pButton type="button" label="Nouvelle partie" (click)="reset()"></button>
+    <!-- Partie admin -->
+    <div *ngIf="isAdmin" class="col-4">
+      <div class="mb-3">
+        <button pButton type="button" label="Vider tous les joueurs" icon="pi pi-trash" severity="danger" (click)="clearAllPlayers()"></button>
+      </div>
+      <div *ngFor="let p of players" class="flex align-items-center gap-2 mb-2">
+        <span class="flex-1">{{ p }}</span>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-times"
+          severity="danger"
+          (click)="removePlayer(p)">
+        </button>
+      </div>
+      <div>
+        <button pButton type="button" label="Reset les buzzers" severity="info" (click)="reset()"></button>
+      </div>
     </div>
   </div>
 </div>
