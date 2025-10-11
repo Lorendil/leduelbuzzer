@@ -15,3 +15,27 @@
 .flex-1 {
   flex: 1;
 }
+
+.buzzer-box {
+  display: flex;
+  justify-content: center; /* centre horizontalement */
+  align-items: center;     /* centre verticalement */
+  margin: 2rem 0;          /* espace autour */
+  height: 320px;           /* hauteur de la zone, ajustable */
+}
+
+.buzzer-button {
+  width: 300px !important;
+  height: 300px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  font-size: 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+
+

@@ -2,6 +2,13 @@ import { Injectable } from '@angular/core';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
+// Définition du type correspondant à ton DTO Java
+export interface PlayerInfo {
+  playerName: string;
+  buzzLocked: boolean;
+  soundBuzzer: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class BuzzerService {
   private client: Client;
@@ -15,7 +22,6 @@ export class BuzzerService {
       onConnect: () => {
         console.log('✅ WebSocket connecté !');
         this.connected = true;
-        // Enregistre toutes les subscriptions en attente
         this.pendingSubscriptions.forEach((fn) => fn());
         this.pendingSubscriptions = [];
       },
@@ -27,65 +33,88 @@ export class BuzzerService {
     this.client.activate();
   }
 
-  join(player: string) {
-    this.client.publish({ destination: '/app/join', body: player });
+  // --- Envoi ---
+  join(player: PlayerInfo) {
+    this.client.publish({ destination: '/app/join', body: JSON.stringify(player) });
   }
 
-  buzz(player: string) {
-    this.client.publish({ destination: '/app/buzz', body: player });
+  buzz(playerName: string) {
+    this.client.publish({ destination: '/app/buzz', body: playerName });
   }
 
   reset() {
     this.client.publish({ destination: '/app/reset' });
   }
+
+  updatePlayers(rule: string) {
+    this.client.publish({ destination: '/app/updateCurrentPlayers', body: rule });
+  }
+
+  // --- Réception ---
   onReset(callback: (msg: string) => void) {
     const subscribeFn = () => {
-      this.client.subscribe('/topic/reset', (message) => {
-        callback(message.body);
-      });
+      this.client.subscribe('/topic/reset', (message) => callback(message.body));
     };
     this.connected ? subscribeFn() : this.pendingSubscriptions.push(subscribeFn);
   }
 
   onBuzz(callback: (msg: string) => void) {
     const subscribeFn = () => {
-      this.client.subscribe('/topic/buzz', (message) => {
-        callback(message.body);
-      });
+      this.client.subscribe('/topic/buzz', (message) => callback(message.body));
     };
     this.connected ? subscribeFn() : this.pendingSubscriptions.push(subscribeFn);
   }
 
-  onPlayers(callback: (players: string[]) => void) {
+  onPlayers(callback: (players: PlayerInfo[]) => void) {
     const subscribeFn = () => {
       this.client.subscribe('/topic/players', (message) => {
         try {
-          const players = JSON.parse(message.body) as string[];
+          const players = JSON.parse(message.body) as PlayerInfo[];
           callback(players);
         } catch (e) {
-          console.error("Erreur parsing onPlayers:", e, message.body);
+          console.error('Erreur parsing onPlayers:', e, message.body);
         }
       });
     };
     this.connected ? subscribeFn() : this.pendingSubscriptions.push(subscribeFn);
   }
 
-  updatePlayers(rule: string) {
-    // Envoie la commande (clearAllPlayers ou nom du joueur à retirer)
-    this.client.publish({ destination: '/app/updateCurrentPlayers', body: rule });
-  }
-
-  onCurrentPlayers(callback: (players: string[]) => void) {
+  onCurrentPlayers(callback: (players: PlayerInfo[]) => void) {
     const subscribeFn = () => {
       this.client.subscribe('/topic/currentPlayers', (message) => {
         try {
-          const players = JSON.parse(message.body) as string[];
+          const players = JSON.parse(message.body) as PlayerInfo[];
           callback(players);
         } catch (e) {
-          console.error('Erreur de parsing currentPlayers:', e, message.body);
+          console.error('Erreur parsing currentPlayers:', e, message.body);
         }
       });
     };
     this.connected ? subscribeFn() : this.pendingSubscriptions.push(subscribeFn);
+  }
+
+  subscribePlayers(callback: (players: PlayerInfo[]) => void) {
+    const subscribeFn = () => {
+      this.client.subscribe('/topic/players', (message) => {
+        try {
+          const players = JSON.parse(message.body) as PlayerInfo[];
+          callback(players);
+        } catch (e) {
+          console.error('Erreur parsing subscribePlayers:', e, message.body);
+        }
+      });
+
+      // Demander la liste initiale
+      this.client.publish({ destination: '/app/subscribePlayers', body: '' });
+    };
+
+    this.connected ? subscribeFn() : this.pendingSubscriptions.push(subscribeFn);
+  }
+
+  updatePlayer(player: PlayerInfo) {
+    this.client.publish({
+      destination: '/app/updatePlayer',
+      body: JSON.stringify(player),
+    });
   }
 }

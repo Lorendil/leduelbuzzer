@@ -1,5 +1,6 @@
 package com.leduel.buzzer.resource;
 
+import com.leduel.buzzer.dto.PlayerInfo;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
@@ -12,23 +13,42 @@ public class BuzzerController {
 
     private boolean buzzerPressed = false;
 
-    private ArrayList<String> joueurs = new ArrayList<>();
+    private ArrayList<PlayerInfo> joueurs = new ArrayList<>();
 
     @MessageMapping("/join")
     @SendTo("/topic/players")
-    public ArrayList<String> join(String player) {
+    public ArrayList<PlayerInfo> join(PlayerInfo player) {
         joueurs.add(player);
+        return joueurs;
+    }
+    @MessageMapping("/subscribePlayers")
+    @SendTo("/topic/players")
+    public ArrayList<PlayerInfo> subscribePlayers() {
         return joueurs;
     }
 
     @MessageMapping("/updateCurrentPlayers")
     @SendTo("/topic/currentPlayers")
-    public ArrayList<String> currentPlayers(String rule) {
+    public ArrayList<PlayerInfo> currentPlayers(String rule) {
         if (rule.equalsIgnoreCase("clearAllPlayers")) {
             joueurs = new ArrayList<>();
         } else {
-            joueurs = joueurs.stream().filter(p -> !p.equalsIgnoreCase(rule)).collect(Collectors.toCollection(ArrayList::new));
+            joueurs = joueurs.stream().filter(p -> !p.getPlayerName().equalsIgnoreCase(rule)).collect(Collectors.toCollection(ArrayList::new));
         }
+        return joueurs;
+    }
+    @MessageMapping("/updatePlayer")
+    @SendTo("/topic/players") // <-- changer ici
+    public ArrayList<PlayerInfo> updatePlayer(PlayerInfo updatedPlayer) {
+        joueurs = joueurs.stream()
+                .map(p -> {
+                    if (p.getPlayerName().equalsIgnoreCase(updatedPlayer.getPlayerName())) {
+                        p.setBuzzLocked(updatedPlayer.isBuzzLocked());
+                        p.setSoundBuzzer(updatedPlayer.getSoundBuzzer());
+                    }
+                    return p;
+                })
+                .collect(Collectors.toCollection(ArrayList::new));
         return joueurs;
     }
 
@@ -37,9 +57,9 @@ public class BuzzerController {
     public String buzz(String player) {
         if (!buzzerPressed) {
             buzzerPressed = true;
-            return player + " a buzzé en premier !";
+            return player;
         }
-        return player + " a essayé de buzzer mais trop tard 😅";
+        return player;
     }
 
     @MessageMapping("/reset")
