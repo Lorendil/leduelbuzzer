@@ -28,7 +28,7 @@ public class BuzzerController {
     }
 
     @MessageMapping("/updateCurrentPlayers")
-    @SendTo("/topic/currentPlayers")
+    @SendTo("/topic/players")
     public ArrayList<PlayerInfo> currentPlayers(String rule) {
         if (rule.equalsIgnoreCase("clearAllPlayers")) {
             joueurs = new ArrayList<>();
