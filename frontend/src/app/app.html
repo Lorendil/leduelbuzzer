@@ -1,52 +1,64 @@
 <div class="container p-3">
   <!-- Header -->
-  <div class="grid mb-4">
-    <div class="col-8">
       <h1>Buzzer de Le Duel</h1>
+
+  <div class="grid contenu gap-5">
+    <!-- Partie joueurs -->
+    <div *ngIf="!isAdmin" class="col-12 sm:col-6 lg:col-7 contour-bloc">
+      <div class="joueur">
+        <h2>Candidat</h2>
+        <!-- Étape 1 : rejoindre -->
+        <div *ngIf="!joined" class="form-joueur flex flex-column ">
+          <label for="pseudo">Ton pseudo</label>
+          <input [(ngModel)]="playerName" placeholder="LaFeeDu62" id="pseudo" class="p-inputtext p-mr-2" />
+          <button pButton type="button" label="Rejoindre la partie" (click)="join()"></button>
+        </div>
+
+        <!-- Étape 2 : partie -->
+        <div *ngIf="joined || isAdmin">
+          <div *ngIf="joined">
+
+            <div class="buzzer-box">
+              <button
+                pButton
+                type="button"
+                label="BUZZER"
+                class="p-button-success buzzer-button"
+                (click)="buzz()"
+                [disabled]="!!winner || currentPlayer?.buzzLocked"
+              ></button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="col-4 flex align-items-center gap-2">
+
+         <div *ngIf="joined || isAdmin" class="col-12 sm:col-6 lg:col-4 contour-bloc">
+          <div>
+            <div *ngIf="joined || isAdmin">
+              <h2>Joueureuses</h2>
+              <ul>
+                <li *ngFor="let p of players">{{ p.playerName }} ({{ p.soundBuzzer }})</li>
+              </ul>
+            </div>
+
+            <div *ngIf="winner" class="winner-box my-2">
+              <h2>{{ winner.toUpperCase() }} a buzzé en premier</h2>
+            </div>
+          </div>
+        </div>
+  
+
+    <!-- Partie admin -->
+  <div class="col-12 sm:col-6 lg:col-4 contour-bloc">
+    <div class="adminview ">
+     <h2>Admin</h2>
+    <div class="flex flex-column form-admin">
       <p-password [(ngModel)]="password" [feedback]="false" placeholder="Admin"></p-password>
       <button pButton type="button" label="Admin" (click)="connectToAdmin()"></button>
     </div>
-  </div>
 
-  <div class="grid">
-    <!-- Partie joueurs -->
-    <div class="col-8">
-      <!-- Étape 1 : rejoindre -->
-      <div *ngIf="!joined" class="join-box mb-3">
-        <input [(ngModel)]="playerName" placeholder="Ton pseudo" class="p-inputtext p-mr-2" />
-        <button pButton type="button" label="Rejoindre la partie" (click)="join()"></button>
-      </div>
-
-      <!-- Étape 2 : partie -->
-      <div *ngIf="joined || isAdmin">
-        <div *ngIf="joined">
-          <h2>Joueurs :</h2>
-          <ul>
-            <li *ngFor="let p of players">{{ p.playerName }} ({{ p.soundBuzzer }})</li>
-          </ul>
-
-          <div class="buzzer-box">
-            <button
-              pButton
-              type="button"
-              label="BUZZER"
-              class="p-button-success buzzer-button"
-              (click)="buzz()"
-              [disabled]="!!winner || currentPlayer?.buzzLocked"
-            ></button>
-          </div>
-        </div>
-
-        <div *ngIf="winner" class="winner-box my-2">
-          <h2>{{ winner.toUpperCase() }}</h2>
-        </div>
-      </div>
-    </div>
-
-    <!-- Partie admin -->
-    <div *ngIf="isAdmin" class="col-4">
+    <div *ngIf="isAdmin" class="col-12 md:col lg:col ">
       <div class="mb-3">
         <button
           pButton
@@ -115,5 +127,8 @@
         ></button>
       </div>
     </div>
+    </div>
+  </div>
   </div>
 </div>
+
