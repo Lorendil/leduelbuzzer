@@ -18,6 +18,9 @@ public class BuzzerController {
     @MessageMapping("/join")
     @SendTo("/topic/players")
     public ArrayList<PlayerInfo> join(PlayerInfo player) {
+        if (joueurs.stream().anyMatch(p -> p.getPlayerName().equalsIgnoreCase(player.getPlayerName()))) {
+            return joueurs;
+        }
         joueurs.add(player);
         return joueurs;
     }

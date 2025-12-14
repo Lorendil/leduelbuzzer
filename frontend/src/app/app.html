@@ -12,6 +12,7 @@
           <label for="pseudo">Ton pseudo</label>
           <input [(ngModel)]="playerName" placeholder="LaFeeDu62" id="pseudo" class="p-inputtext p-mr-2" />
           <button pButton type="button" label="Rejoindre la partie" (click)="join()"></button>
+          <div *ngIf="isAlreadyPicked">Ce pseudo est déjà prit</div>
         </div>
 
         <!-- Étape 2 : partie -->

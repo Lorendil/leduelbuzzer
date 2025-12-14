@@ -28,6 +28,7 @@ export class AppComponent {
   playerName: string = '';
   joined: boolean = false;
   isAdmin: boolean = false;
+  isAlreadyPicked: boolean = false;
   players: PlayerInfo[] = [];
   winner: string | null = null;
 
@@ -45,6 +46,7 @@ export class AppComponent {
   }
 
   ngOnInit() {
+    this.subscribeAdminPlayers();
     // Précharger les sons
     this.sounds = {
       cow: new Audio('sounds/cow.wav'),
@@ -75,6 +77,15 @@ export class AppComponent {
 
   join() {
     if (this.playerName.trim()) {
+      this.isAlreadyPicked  = false;
+      console.log(this.players)
+      for(let i = 0; i < this.players.length; i++) {
+        if(this.players[i].playerName == this.playerName){
+          this.isAlreadyPicked = true;
+          break;
+        } 
+      }
+      if (!this.isAlreadyPicked) {
       const soundKey = this.chooseRandomSound();
       const player: PlayerInfo = {
         playerName: this.playerName,
@@ -83,6 +94,7 @@ export class AppComponent {
       };
       this.joined = true;
       this.buzzerService.join(player);
+      }
     }
   }
 
