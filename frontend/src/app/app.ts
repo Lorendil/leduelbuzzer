@@ -31,6 +31,7 @@ export class AppComponent {
   isAlreadyPicked: boolean = false;
   players: PlayerInfo[] = [];
   winner: string | null = null;
+  volume: number = 0.5;
 
   private sounds: { [key: string]: HTMLAudioElement } = {};
   soundKeys = Object.keys(this.sounds);
@@ -65,6 +66,7 @@ export class AppComponent {
       const soundKey = player?.soundBuzzer || 'cow';
       const sound = this.sounds[soundKey];
       if (sound) {
+        sound.volume = this.volume; 
         sound.currentTime = 0;
         sound.play().catch((err) => console.error('Erreur lecture son :', err));
       }
@@ -96,6 +98,12 @@ export class AppComponent {
       this.buzzerService.join(player);
       }
     }
+  }
+
+  onVolumeChange() {
+    Object.values(this.sounds).forEach(sound => {
+      sound.volume = this.volume;
+    });
   }
 
   buzz() {

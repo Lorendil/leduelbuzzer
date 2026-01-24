@@ -1,6 +1,22 @@
 <div class="container p-3">
   <!-- Header -->
-      <h1>Buzzer de Le Duel</h1>
+  <h1>Buzzer de Le Duel</h1>
+  <div class="grid gap-5">
+    <div class="col-1"></div>
+    <div class="col-2">
+      <label for="volume">Volume : {{ volume * 100 | number: '1.0-0' }}%</label>
+      <input
+        id="volume"
+        type="range"
+        min="0"
+        max="1"
+        step="0.01"
+        [(ngModel)]="volume"
+        (ngModelChange)="onVolumeChange()"
+        style="width: 100%"
+      />
+    </div>
+  </div>
 
   <div class="grid contenu gap-5">
     <!-- Partie joueurs -->
@@ -8,9 +24,14 @@
       <div class="joueur">
         <h2>Candidat</h2>
         <!-- Étape 1 : rejoindre -->
-        <div *ngIf="!joined" class="form-joueur flex flex-column ">
+        <div *ngIf="!joined" class="form-joueur flex flex-column">
           <label for="pseudo">Ton pseudo</label>
-          <input [(ngModel)]="playerName" placeholder="LaFeeDu62" id="pseudo" class="p-inputtext p-mr-2" />
+          <input
+            [(ngModel)]="playerName"
+            placeholder="LaFeeDu62"
+            id="pseudo"
+            class="p-inputtext p-mr-2"
+          />
           <button pButton type="button" label="Rejoindre la partie" (click)="join()"></button>
           <div *ngIf="isAlreadyPicked">Ce pseudo est déjà prit</div>
         </div>
@@ -18,7 +39,6 @@
         <!-- Étape 2 : partie -->
         <div *ngIf="joined || isAdmin">
           <div *ngIf="joined">
-
             <div class="buzzer-box">
               <button
                 pButton
@@ -34,102 +54,100 @@
       </div>
     </div>
 
-         <div *ngIf="joined || isAdmin" class="col-12 sm:col-6 lg:col-4 contour-bloc">
-          <div>
-            <div *ngIf="joined || isAdmin">
-              <h2>Joueureuses</h2>
-              <ul>
-                <li *ngFor="let p of players">{{ p.playerName }} ({{ p.soundBuzzer }})</li>
-              </ul>
-            </div>
-
-            <div *ngIf="winner" class="winner-box my-2">
-              <h2>{{ winner.toUpperCase() }} a buzzé en premier</h2>
-            </div>
-          </div>
+    <div *ngIf="joined || isAdmin" class="col-12 sm:col-6 lg:col-4 contour-bloc">
+      <div>
+        <div *ngIf="joined || isAdmin">
+          <h2>Joueureuses</h2>
+          <ul>
+            <li *ngFor="let p of players">{{ p.playerName }} ({{ p.soundBuzzer }})</li>
+          </ul>
         </div>
-  
+
+        <div *ngIf="winner" class="winner-box my-2">
+          <h2>{{ winner.toUpperCase() }} a buzzé en premier</h2>
+        </div>
+      </div>
+    </div>
 
     <!-- Partie admin -->
-  <div class="col-12 sm:col-6 lg:col-4 contour-bloc">
-    <div class="adminview ">
-     <h2>Admin</h2>
-    <div class="flex flex-column form-admin">
-      <p-password [(ngModel)]="password" [feedback]="false" placeholder="Admin"></p-password>
-      <button pButton type="button" label="Admin" (click)="connectToAdmin()"></button>
-    </div>
+    <div class="col-12 sm:col-6 lg:col-4 contour-bloc">
+      <div class="adminview">
+        <h2>Admin</h2>
+        <div class="flex flex-column form-admin">
+          <p-password [(ngModel)]="password" [feedback]="false" placeholder="Admin"></p-password>
+          <button pButton type="button" label="Admin" (click)="connectToAdmin()"></button>
+        </div>
 
-    <div *ngIf="isAdmin" class="col-12 md:col lg:col ">
-      <div class="mb-3">
-        <button
-          pButton
-          type="button"
-          label="Vider tous les joueurs"
-          icon="pi pi-trash"
-          severity="danger"
-          (click)="clearAllPlayers()"
-        ></button>
+        <div *ngIf="isAdmin" class="col-12 md:col lg:col">
+          <div class="mb-3">
+            <button
+              pButton
+              type="button"
+              label="Vider tous les joueurs"
+              icon="pi pi-trash"
+              severity="danger"
+              (click)="clearAllPlayers()"
+            ></button>
+          </div>
+
+          <p-table [value]="players">
+            <ng-template #header>
+              <tr>
+                <th>Pseudo</th>
+                <th>Bruitage</th>
+                <th>Verrou</th>
+                <th>Expulser</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-player>
+              <tr>
+                <td>{{ player.playerName }}</td>
+                <td>
+                  <select
+                    [(ngModel)]="player.soundBuzzer"
+                    (ngModelChange)="onSoundChange(player, $event)"
+                  >
+                    <option *ngFor="let key of soundKeys" [value]="key">{{ key }}</option>
+                  </select>
+                </td>
+                <td>
+                  <i
+                    class="pi"
+                    [ngClass]="{
+                      'pi-lock': player.buzzLocked,
+                      'pi-lock-open': !player.buzzLocked,
+                      'text-red-500': player.buzzLocked,
+                      'text-green-500': !player.buzzLocked,
+                      'cursor-pointer': true,
+                    }"
+                    (click)="togglePlayerLock(player)"
+                    style="font-size: 1.5rem"
+                  ></i>
+                </td>
+                <td>
+                  <button
+                    pButton
+                    type="button"
+                    icon="pi pi-times"
+                    severity="danger"
+                    (click)="removePlayer(player.playerName)"
+                  ></button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+
+          <div>
+            <button
+              pButton
+              type="button"
+              label="Reset les buzzers"
+              severity="info"
+              (click)="reset()"
+            ></button>
+          </div>
+        </div>
       </div>
-
-      <p-table [value]="players">
-        <ng-template #header>
-          <tr>
-            <th>Pseudo</th>
-            <th>Bruitage</th>
-            <th>Verrou</th>
-            <th>Expulser</th>
-          </tr>
-        </ng-template>
-        <ng-template #body let-player>
-          <tr>
-            <td>{{ player.playerName }}</td>
-            <td>
-              <select
-                [(ngModel)]="player.soundBuzzer"
-                (ngModelChange)="onSoundChange(player, $event)"
-              >
-                <option *ngFor="let key of soundKeys" [value]="key">{{ key }}</option>
-              </select>
-            </td>
-            <td>
-              <i
-                class="pi"
-                [ngClass]="{
-                  'pi-lock': player.buzzLocked,
-                  'pi-lock-open': !player.buzzLocked,
-                  'text-red-500': player.buzzLocked,
-                  'text-green-500': !player.buzzLocked,
-                  'cursor-pointer': true
-                }"
-                (click)="togglePlayerLock(player)"
-                style="font-size: 1.5rem"
-              ></i>
-            </td>
-            <td>
-              <button
-                pButton
-                type="button"
-                icon="pi pi-times"
-                severity="danger"
-                (click)="removePlayer(player.playerName)"
-              ></button>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-
-      <div>
-        <button
-          pButton
-          type="button"
-          label="Reset les buzzers"
-          severity="info"
-          (click)="reset()"
-        ></button>
-      </div>
     </div>
-    </div>
-  </div>
   </div>
 </div>
-
