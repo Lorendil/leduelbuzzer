@@ -1,18 +1,21 @@
 name: Build & Release
-  
+
 on:
   push:
     tags:
       - "v*"
-  
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-  
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-  
+
       # ====================
       # BACK - MAVEN
       # ====================
@@ -22,17 +25,17 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
-  
+
       - name: Build backend
         working-directory: backend
         run: mvn clean package -DskipTests
-  
+
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar
           path: backend/target/*.jar
-  
+
       # ====================
       # FRONT - ANGULAR
       # ====================
@@ -42,43 +45,43 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-  
+
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
-  
+
       - name: Build frontend
         working-directory: frontend
         run: npm run build
-  
+
       - name: Zip frontend dist
         run: |
           cd frontend/dist
           zip -r ../../frontend-dist.zip .
-  
+
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: frontend-dist.zip
-  
+
   release:
     needs: build
     runs-on: ubuntu-latest
-  
+
     steps:
       - name: Download backend artifact
         uses: actions/download-artifact@v4
         with:
           name: backend-jar
           path: artifacts/backend
-  
+
       - name: Download frontend artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
           path: artifacts/frontend
-  
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
