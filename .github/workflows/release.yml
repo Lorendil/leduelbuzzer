@@ -24,14 +24,14 @@ jobs:
           cache: maven
   
       - name: Build backend
-        working-directory: back
+        working-directory: backend
         run: mvn clean package -DskipTests
   
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar
-          path: back/target/*.jar
+          path: backend/target/*.jar
   
       # ====================
       # FRONT - ANGULAR
@@ -48,12 +48,12 @@ jobs:
         run: npm ci
   
       - name: Build frontend
-        working-directory: front
+        working-directory: frontend
         run: npm run build
   
       - name: Zip frontend dist
         run: |
-          cd front/dist
+          cd frontend/dist
           zip -r ../../frontend-dist.zip .
   
       - name: Upload frontend artifact
