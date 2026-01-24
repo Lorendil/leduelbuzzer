@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { ConfigService } from '../core/services/config/config.service';
 
 // Définition du type correspondant à ton DTO Java
 export interface PlayerInfo {
@@ -15,9 +16,12 @@ export class BuzzerService {
   private connected = false;
   private pendingSubscriptions: (() => void)[] = [];
 
-  constructor() {
+  constructor(private configService: ConfigService) {
+
+    const wsUrl = `${this.configService.get('apiUrl')}/ws`;
+
     this.client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(wsUrl),
       reconnectDelay: 5000,
       onConnect: () => {
         console.log('✅ WebSocket connecté !');
