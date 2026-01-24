@@ -1,0 +1,89 @@
+name: Build & Release
+  
+on:
+  push:
+    tags:
+      - "v*"
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+  
+      # ====================
+      # BACK - MAVEN
+      # ====================
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+  
+      - name: Build backend
+        working-directory: back
+        run: mvn clean package -DskipTests
+  
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: back/target/*.jar
+  
+      # ====================
+      # FRONT - ANGULAR
+      # ====================
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+  
+      - name: Install frontend dependencies
+        working-directory: front
+        run: npm ci
+  
+      - name: Build frontend
+        working-directory: front
+        run: npm run build
+  
+      - name: Zip frontend dist
+        run: |
+          cd front/dist
+          zip -r ../../frontend-dist.zip .
+  
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend-dist.zip
+  
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: artifacts/backend
+  
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: artifacts/frontend
+  
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/backend/*.jar
+            artifacts/frontend/frontend-dist.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
