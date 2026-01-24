@@ -41,10 +41,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: front/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
   
       - name: Install frontend dependencies
-        working-directory: front
+        working-directory: frontend
         run: npm ci
   
       - name: Build frontend
