@@ -13,6 +13,7 @@
         step="0.01"
         [(ngModel)]="volume"
         (ngModelChange)="onVolumeChange()"
+        [attr.aria-valuetext]="(volume * 100 | number: '1.0-0') + '%'"
         style="width: 100%"
       />
     </div>
@@ -24,17 +25,20 @@
       <div class="joueur">
         <h2>Candidat</h2>
         <!-- Étape 1 : rejoindre -->
-        <div *ngIf="!joined" class="form-joueur flex flex-column">
+        <form (ngSubmit)="join()" *ngIf="!joined" class="form-joueur flex flex-column">
           <label for="pseudo">Ton pseudo</label>
           <input
             [(ngModel)]="playerName"
+            name="pseudo"
             placeholder="LaFeeDu62"
             id="pseudo"
             class="p-inputtext p-mr-2"
           />
-          <button pButton type="button" label="Rejoindre la partie" (click)="join()"></button>
+
+          <button pButton type="submit" label="Rejoindre la partie"></button>
+
           <div *ngIf="isAlreadyPicked">Ce pseudo est déjà prit</div>
-        </div>
+        </form>
 
         <!-- Étape 2 : partie -->
         <div *ngIf="joined || isAdmin">
@@ -145,6 +149,11 @@
               severity="info"
               (click)="reset()"
             ></button>
+          </div>
+          <br>
+          <div>
+            <label for="listenReset">Activer le son du Reset</label>
+            <p-checkbox [(ngModel)]="listenToReset" [binary]="true" name="listenReset" class="ml-2"/>
           </div>
         </div>
       </div>
